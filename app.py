@@ -1,6 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 import json
 import os.path
+
+import werkzeug
+
+
 
 app = Flask(__name__)
 
@@ -25,12 +29,37 @@ def you_url():
             flash('That short name is already taken')
             return redirect(url_for('home'))
 
+        if 'url' in request.form.keys():
+            urls[request.form['code']] = {'url':request.form['url']}
+        else:
+            f = request.files['file']
+            full_name = request.form['code'] + werkzeug.utils.secure_filename(f.filename)
+            f.save('/Users/hmegahed/Desktop/Hossam/projects/Flask_essential_training_June2022/static/user_files/'+ full_name)
+            urls[request.form['code']] = {'file':full_name}
 
-        urls[request.form['code']] = {'url':request.form['url']}
+
         with open ('urls.json', 'w') as url_file:
             json.dump(urls, url_file)
-
-
         return render_template('you_url.html', code=request.form['code'])
+
     else:
         return redirect(url_for('home'))
+
+
+@app.route('/<string:code>')
+def redirect_to_url(code):
+    if os.path.exists('urls.json'):
+        with open('urls.json') as urls_file:
+            urls = json.load(urls_file)
+            if code in urls.keys():
+                if 'url' in urls[code].keys():
+                    return redirect(urls[code]['url'])
+                else:
+                    return redirect(url_for('static', filename='user_files/' + urls[code]['file']))
+
+
+    return abort(404)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('page_not_found.html')
