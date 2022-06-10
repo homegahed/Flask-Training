@@ -1,3 +1,15 @@
-<h1> This is Home </h1>
+<h1> URL Shortner </h1>
 
-<h2> {{ company }}</h2>
+<form action="you-url", method="post">
+
+  <label for="url"> Website url</label>
+  <input type="url" name="url" value="" required>
+
+  <br><br>
+  <label for="code"> Short name</label>
+  <input type="text" name="code" value="" required>
+
+
+  <br><br>
+  <input type="submit" value="Shorten">
+</form>
